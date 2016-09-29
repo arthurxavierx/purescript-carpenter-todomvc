@@ -12,15 +12,18 @@ import React.DOM as R
 import React.DOM.Props as P
 import Carpenter (Render, Update)
 import Carpenter.Cedar (cedarSpec, CedarClass, watch')
-import Carpenter.Router (Route, match, (:->), router)
 import Components.Task (taskComponent, Task(Task))
 import Components.Task (init) as Task
+import Control.Alternative ((<|>))
 import Control.Monad.Eff.Class (liftEff)
 import Data.Array (null, filter, length, mapMaybe, (:))
 import Data.Filter (Filter(..), predicate)
 import Data.Foldable (all)
 import Data.Maybe (Maybe(..))
 import React (ReactElement)
+import React.Router.Hash (hashRouter)
+import Routing.Match (Match)
+import Routing.Match.Class (lit)
 import Unsafe.Coerce (unsafeCoerce)
 
 data Action
@@ -45,12 +48,13 @@ todoListComponent = React.createClass $ cedarSpec update render
 init :: Array Task -> Int -> TodoList
 init tasks uid = { field: "", tasks: tasks, uid: uid, filter: All }
 
-routes :: Route -> Filter
-routes = match
-  [ "#/all" :-> All
-  , "#/active" :-> Active
-  , "#/completed" :-> Completed
-  ] All
+routes :: Match Filter
+routes =
+  Active <$ (lit "" *> lit "active")
+  <|>
+  Completed <$ (lit "" *> lit "completed")
+  <|>
+  All <$ lit ""
 
 update :: ∀ props eff. Update TodoList props Action eff
 update yield dispatch action _ _ =
@@ -90,7 +94,7 @@ update yield dispatch action _ _ =
 render :: ∀ props. Render TodoList props Action
 render dispatch props state children =
   R.section [ P.className "todoapp" ]
-    [ router (dispatch <<< ChangeFilter) routes
+    [ hashRouter (dispatch <<< ChangeFilter) routes
     , renderHeader dispatch props state children
     , renderList dispatch props state children
     , renderFooter dispatch props state children
@@ -170,8 +174,7 @@ renderFooter dispatch _ state _ =
 
     filterButton :: Filter -> String -> ReactElement
     filterButton filter url =
-      R.li
-        [ P.onClick \_ -> dispatch $ ChangeFilter filter ]
+      R.li'
         [ R.a
           [ P.className if filter == state.filter then "selected" else ""
           , P.href url
