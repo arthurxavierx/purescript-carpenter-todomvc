@@ -21,7 +21,7 @@ import Data.Filter (Filter(..), predicate)
 import Data.Foldable (all)
 import Data.Maybe (Maybe(..))
 import React (ReactElement)
-import React.Router.Hash (hashRouter)
+import React.Router.History (link, historyRouter)
 import Routing.Match (Match)
 import Routing.Match.Class (lit)
 import Unsafe.Coerce (unsafeCoerce)
@@ -94,7 +94,7 @@ update yield dispatch action _ _ =
 render :: ∀ props. Render TodoList props Action
 render dispatch props state children =
   R.section [ P.className "todoapp" ]
-    [ hashRouter (dispatch <<< ChangeFilter) routes
+    [ historyRouter (dispatch <<< ChangeFilter) routes
     , renderHeader dispatch props state children
     , renderList dispatch props state children
     , renderFooter dispatch props state children
@@ -155,9 +155,9 @@ renderFooter dispatch _ state _ =
       ]
     -- tasks filter
     , R.ul [ P.className "filters" ]
-      [ filterButton All "#/"
-      , filterButton Active "#/active"
-      , filterButton Completed "#/completed"
+      [ filterButton All "/"
+      , filterButton Active "/active"
+      , filterButton Completed "/completed"
       ]
     -- clear completed button
     , R.button
@@ -175,9 +175,8 @@ renderFooter dispatch _ state _ =
     filterButton :: Filter -> String -> ReactElement
     filterButton filter url =
       R.li'
-        [ R.a
+        [ link url
           [ P.className if filter == state.filter then "selected" else ""
-          , P.href url
           ]
           [ R.text (show filter) ]
         ]
