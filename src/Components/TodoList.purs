@@ -21,7 +21,7 @@ import Data.Filter (Filter(..), predicate)
 import Data.Foldable (all)
 import Data.Maybe (Maybe(..))
 import React (ReactElement)
-import React.Router.History (link, historyRouter)
+import React.Router.History (link, historyRouter')
 import Routing.Match (Match)
 import Routing.Match.Class (lit)
 import Unsafe.Coerce (unsafeCoerce)
@@ -94,7 +94,7 @@ update yield dispatch action _ _ =
 render :: ∀ props. Render TodoList props Action
 render dispatch props state children =
   R.section [ P.className "todoapp" ]
-    [ historyRouter (dispatch <<< ChangeFilter) routes
+    [ historyRouter' (dispatch <<< ChangeFilter) routes
     , renderHeader dispatch props state children
     , renderList dispatch props state children
     , renderFooter dispatch props state children
